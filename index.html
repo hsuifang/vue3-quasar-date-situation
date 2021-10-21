@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/quasar@2.1.0/dist/quasar.min.css"
+    />
+  </head>
+  <body>
+    <div id="q-app" class="q-pa-lg">
+      <div class="row q-col-gutter-md">
+        <div class="col-md-4">
+          <q-card class="q-pa-md">
+            <h5>選擇單一日期</h5>
+            <ul class="grey-100">
+              <li>搭配input框去顯示</li>
+              <li>時間限制：選擇小於等於今天</li>
+            </ul>
+            <p>Date: {{first.model || '-'}}</p>
+            <q-input
+              dense
+              filled
+              v-model="first.model"
+              mask="####-##-##"
+              :rules="[v => !Number.isNaN(new Date(v).valueOf())]"
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    transition-show="scale"
+                    transition-hide="scale"
+                  >
+                    <q-date
+                      color="yellow-14"
+                      v-model="first.model"
+                      mask="YYYY-MM-DD"
+                      :options="beforeToday"
+                      today-btn
+                    >
+                      <div class="row items-center justify-end">
+                        <q-btn
+                          v-close-popup
+                          label="Close"
+                          color="primary"
+                          flat
+                        />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+          </q-card>
+        </div>
+        <div class="col-md-4">
+          <q-card class="q-pa-md">
+            <h5>選擇單一日期</h5>
+            <ul class="grey-100">
+              <li>搭配input框去顯示</li>
+              <li>時間限制：開始日 <= 結束日</li>
+              <li>選擇區間限制 xx 天</li>
+            </ul>
+            <p>Date: {{second.start || '-'}} - {{second.end || '-'}}</p>
+            <div class="row q-gutter-x-md">
+              <q-input
+                dense
+                filled
+                v-model="second.start"
+                mask="####-##-##"
+                :rules="[v => !Number.isNaN(new Date(v).valueOf())]"
+              >
+                <template v-slot:append>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-date
+                        color="yellow-14"
+                        v-model="second.start"
+                        mask="YYYY-MM-DD"
+                        :options="secondStart"
+                        today-btn
+                      >
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Close"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+              <!-- using .valueof method to return primitive value  -->
+              <q-input
+                dense
+                filled
+                v-model="second.end"
+                mask="####-##-##"
+                :rules="[v => !Number.isNaN(new Date(v).valueOf())]"
+              >
+                <template v-slot:append>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-date
+                        color="yellow-14"
+                        v-model="second.end"
+                        mask="YYYY-MM-DD"
+                        :options="secondEnd"
+                        today-btn
+                      >
+                        <div class="row items-center justify-end">
+                          <q-btn
+                            v-close-popup
+                            label="Close"
+                            color="primary"
+                            flat
+                          />
+                        </div>
+                      </q-date>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
+          </q-card>
+        </div>
+        <div class="col-md-4">
+          <q-card class="q-pa-md">
+            <p>Date: {{range || '-'}}</p>
+            <q-date v-model="range" range />
+          </q-card>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quasar@2.1.0/dist/quasar.umd.prod.js"></script>
+    <script src="./app.js"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            date: '2019/02/01',
+            first: {
+              model: '',
+            },
+            second: {
+              start: '',
+              end: '',
+            },
+            range: '',
+            limit: 5 * 24 * 60 * 60 * 1000,
+            beforeToday(date) {
+              return new Date(date) <= new Date()
+            },
+            secondStart: (date) => {
+              if (!this.second.end) return true
+              const time = new Date(this.second.end).getTime() - this.limit
+
+              return (
+                new Date(date) >= new Date(time) &&
+                new Date(date) <= new Date(this.second.end)
+              )
+            },
+            secondEnd: (date) => {
+              if (!this.second.start) return true
+              const start = `${this.second.start} 00:00:00`
+              const time = new Date(start).getTime() + this.limit
+              return (
+                new Date(date) < new Date(time) &&
+                new Date(date) >= new Date(start)
+              )
+            },
+          }
+        },
+        computed: {},
+      })
+
+      app.use(Quasar, { config: {} })
+      app.mount('#q-app')
+    </script>
+  </body>
+</html>
